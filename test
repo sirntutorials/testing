@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Rebels - Volleyball Night</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-white font-sans p-6">
+
+    <header class="text-center mb-10">
+        <h1 class="text-4xl font-bold text-orange-500">THE REBELS</h1>
+        <p class="text-slate-400">Game Night Tracker</p>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        
+        <section class="bg-slate-800 p-6 rounded-xl shadow-lg">
+            <h2 class="text-xl font-bold mb-4 border-b border-slate-700 pb-2">Record Match</h2>
+            <form id="matchForm" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm mb-1">Team A</label>
+                        <input type="text" id="teamA" class="w-full bg-slate-700 p-2 rounded border border-slate-600 focus:outline-none focus:border-orange-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm mb-1">Team B</label>
+                        <input type="text" id="teamB" class="w-full bg-slate-700 p-2 rounded border border-slate-600 focus:outline-none focus:border-orange-500" required>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="number" id="scoreA" placeholder="Score A" class="bg-slate-700 p-2 rounded" required>
+                    <input type="number" id="scoreB" placeholder="Score B" class="bg-slate-700 p-2 rounded" required>
+                </div>
+                <button type="submit" class="w-full bg-orange-600 hover:bg-orange-500 font-bold py-2 rounded transition">Submit Result</button>
+            </form>
+        </section>
+
+        <section class="bg-slate-800 p-6 rounded-xl shadow-lg">
+            <h2 class="text-xl font-bold mb-4 border-b border-slate-700 pb-2">Leaderboard (Quotient Rank)</h2>
+            <table class="w-full text-left text-sm">
+                <thead>
+                    <tr class="text-slate-500">
+                        <th class="py-2">Rank</th>
+                        <th>Team</th>
+                        <th>W-L</th>
+                        <th>Quotient</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboardBody">
+                    </tbody>
+            </table>
+        </section>
+
+    </div>
+
+    <div class="mt-8 text-center">
+        <button onclick="shareToFB()" class="bg-blue-600 px-4 py-2 rounded text-sm font-bold">Share Standings to Facebook</button>
+    </div>
+
+    <script>
+        let teams = {};
+
+        document.getElementById('matchForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const tA = document.getElementById('teamA').value;
+            const tB = document.getElementById('teamB').value;
+            const sA = parseInt(document.getElementById('scoreA').value);
+            const sB = parseInt(document.getElementById('scoreB').value);
+
+            updateStats(tA, sA, sB);
+            updateStats(tB, sB, sA);
+            renderLeaderboard();
+            e.target.reset();
+        });
+
+        function updateStats(name, pf, pa) {
+            if (!teams[name]) teams[name] = { name, wins: 0, losses: 0, pf: 0, pa: 0 };
+            teams[name].pf += pf;
+            teams[name].pa += pa;
+            if (pf > pa) teams[name].wins += 1; else teams[name].losses += 1;
+        }
+
+        function renderLeaderboard() {
+            const list = Object.values(teams).sort((a, b) => {
+                const qA = a.pa === 0 ? a.pf : a.pf / a.pa;
+                const qB = b.pa === 0 ? b.pf : b.pf / b.pa;
+                return qB - qA; // Rank by Quotient
+            });
+
+            const body = document.getElementById('leaderboardBody');
+            body.innerHTML = list.map((t, i) => {
+                const quotient = (t.pa === 0 ? t.pf : (t.pf / t.pa)).toFixed(3);
+                return `
+                    <tr class="border-b border-slate-700">
+                        <td class="py-3 font-bold text-orange-400">#${i + 1}</td>
+                        <td>${t.name}</td>
+                        <td>${t.wins}-${t.losses}</td>
+                        <td class="text-green-400 font-mono">${quotient}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function shareToFB() {
+            const url = window.location.href;
+            window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+        }
+    </script>
+</body>
+</html>
