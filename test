@@ -3,109 +3,243 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Rebels - Volleyball Night</title>
+    <title>The Rebels - Ultimate Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-900 text-white font-sans p-6">
+<body class="bg-slate-900 text-white p-4 pb-20">
 
-    <header class="text-center mb-10">
-        <h1 class="text-4xl font-bold text-orange-500">THE REBELS</h1>
-        <p class="text-slate-400">Game Night Tracker</p>
+    <header class="text-center mb-6">
+        <h1 class="text-3xl font-bold text-orange-500 italic">THE REBELS</h1>
+        <div class="flex justify-center gap-2 mt-4 text-[10px] font-bold uppercase tracking-widest">
+            <button onclick="showSection('admin')" class="bg-slate-700 px-3 py-2 rounded hover:bg-orange-600 transition">Admin</button>
+            <button onclick="showSection('standings')" class="bg-slate-700 px-3 py-2 rounded hover:bg-orange-600 transition">Standings</button>
+            <button onclick="showSection('eliminations')" class="bg-slate-700 px-3 py-2 rounded hover:bg-orange-600 transition">Eliminations</button>
+        </div>
     </header>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        
-        <section class="bg-slate-800 p-6 rounded-xl shadow-lg">
-            <h2 class="text-xl font-bold mb-4 border-b border-slate-700 pb-2">Record Match</h2>
-            <form id="matchForm" class="space-y-4">
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm mb-1">Team A</label>
-                        <input type="text" id="teamA" class="w-full bg-slate-700 p-2 rounded border border-slate-600 focus:outline-none focus:border-orange-500" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm mb-1">Team B</label>
-                        <input type="text" id="teamB" class="w-full bg-slate-700 p-2 rounded border border-slate-600 focus:outline-none focus:border-orange-500" required>
-                    </div>
+    <section id="section-admin" class="space-y-6">
+        <div class="bg-slate-800 p-4 rounded-lg shadow-xl border border-slate-700">
+            <h2 class="text-sm font-bold text-slate-400 uppercase mb-3">1. Tournament Settings</h2>
+            <div class="flex items-center gap-3">
+                <input type="checkbox" id="usePools" onchange="togglePools()" class="w-5 h-5 accent-orange-500">
+                <label for="usePools" class="text-sm font-semibold">Enable Pool Play (A/B Groups)</label>
+            </div>
+        </div>
+
+        <div class="bg-slate-800 p-4 rounded-lg shadow-xl border border-slate-700">
+            <h2 class="text-sm font-bold text-slate-400 uppercase mb-3">2. Manage Teams</h2>
+            <div class="flex gap-2 mb-4">
+                <input type="text" id="newTeamName" placeholder="Team Name" class="flex-1 bg-slate-700 p-2 rounded text-sm">
+                <select id="newTeamPool" class="bg-slate-700 p-2 rounded text-sm hidden">
+                    <option value="A">Pool A</option>
+                    <option value="B">Pool B</option>
+                </select>
+                <button onclick="addTeam()" class="bg-green-600 px-4 py-2 rounded font-bold">+</button>
+            </div>
+            <div id="teamList" class="flex flex-wrap gap-2"></div>
+        </div>
+
+        <div class="bg-slate-800 p-4 rounded-lg shadow-xl border border-slate-700">
+            <h2 class="text-sm font-bold text-slate-400 uppercase mb-3">3. Record Match (Live Scoring)</h2>
+            <form id="matchForm" class="space-y-3">
+                <input type="hidden" id="editIndex" value="-1">
+                <div class="grid grid-cols-2 gap-2">
+                    <select id="teamA" class="bg-slate-700 p-2 rounded text-sm" required><option value="">Select Team A</option></select>
+                    <select id="teamB" class="bg-slate-700 p-2 rounded text-sm" required><option value="">Select Team B</option></select>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <input type="number" id="scoreA" placeholder="Score A" class="bg-slate-700 p-2 rounded" required>
-                    <input type="number" id="scoreB" placeholder="Score B" class="bg-slate-700 p-2 rounded" required>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="number" id="scoreA" placeholder="Score A" class="bg-slate-700 p-2 rounded text-sm" required>
+                    <input type="number" id="scoreB" placeholder="Score B" class="bg-slate-700 p-2 rounded text-sm" required>
                 </div>
-                <button type="submit" class="w-full bg-orange-600 hover:bg-orange-500 font-bold py-2 rounded transition">Submit Result</button>
+                <button type="submit" id="submitBtn" class="w-full bg-orange-600 font-bold py-2 rounded">Record Game</button>
             </form>
-        </section>
+        </div>
 
-        <section class="bg-slate-800 p-6 rounded-xl shadow-lg">
-            <h2 class="text-xl font-bold mb-4 border-b border-slate-700 pb-2">Leaderboard (Quotient Rank)</h2>
+        <div class="bg-slate-800 p-4 rounded-lg shadow-xl border border-slate-700">
+            <h2 class="text-sm font-bold text-slate-400 uppercase mb-3">Match History (G1 - G[X])</h2>
+            <div id="matchHistory" class="space-y-2 text-xs"></div>
+        </div>
+    </section>
+
+    <section id="section-standings" class="hidden space-y-6">
+        <div id="poolA-container" class="bg-slate-800 p-4 rounded-lg">
+            <h2 id="poolA-title" class="text-lg font-bold text-orange-400 mb-2 underline">Rankings</h2>
             <table class="w-full text-left text-sm">
-                <thead>
-                    <tr class="text-slate-500">
-                        <th class="py-2">Rank</th>
-                        <th>Team</th>
-                        <th>W-L</th>
-                        <th>Quotient</th>
-                    </tr>
-                </thead>
-                <tbody id="leaderboardBody">
-                    </tbody>
+                <thead class="text-slate-500"><tr><th class="py-2">Rank</th><th>Team</th><th>W-L</th><th>Quotient</th></tr></thead>
+                <tbody id="leaderboardA"></tbody>
             </table>
-        </section>
+        </div>
+        <div id="poolB-container" class="bg-slate-800 p-4 rounded-lg hidden">
+            <h2 class="text-lg font-bold text-blue-400 mb-2 underline">Pool B Rankings</h2>
+            <table class="w-full text-left text-sm">
+                <thead class="text-slate-500"><tr><th class="py-2">Rank</th><th>Team</th><th>W-L</th><th>Quotient</th></tr></thead>
+                <tbody id="leaderboardB"></tbody>
+            </table>
+        </div>
+    </section>
 
-    </div>
-
-    <div class="mt-8 text-center">
-        <button onclick="shareToFB()" class="bg-blue-600 px-4 py-2 rounded text-sm font-bold">Share Standings to Facebook</button>
-    </div>
+    <section id="section-eliminations" class="hidden space-y-4">
+        <h2 class="text-xl font-bold text-center text-orange-500">Finals Phase</h2>
+        <div id="semiFinalBracket" class="space-y-4">
+            </div>
+    </section>
 
     <script>
-        let teams = {};
+        let teams = JSON.parse(localStorage.getItem('rebels_teams')) || [];
+        let matches = JSON.parse(localStorage.getItem('rebels_matches')) || [];
+        let settings = JSON.parse(localStorage.getItem('rebels_settings')) || { usePools: false };
 
+        function showSection(id) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(`section-${id}`).classList.remove('hidden');
+            renderAll();
+        }
+
+        function togglePools() {
+            settings.usePools = document.getElementById('usePools').checked;
+            localStorage.setItem('rebels_settings', JSON.stringify(settings));
+            renderAll();
+        }
+
+        function addTeam() {
+            const name = document.getElementById('newTeamName').value;
+            const pool = document.getElementById('newTeamPool').value;
+            if(name) {
+                teams.push({ name, pool: settings.usePools ? pool : 'All' });
+                document.getElementById('newTeamName').value = '';
+                saveAll();
+                renderAll();
+            }
+        }
+
+        function saveAll() {
+            localStorage.setItem('rebels_teams', JSON.stringify(teams));
+            localStorage.setItem('rebels_matches', JSON.stringify(matches));
+        }
+
+        function renderAll() {
+            const usePools = settings.usePools;
+            document.getElementById('usePools').checked = usePools;
+            document.getElementById('newTeamPool').classList.toggle('hidden', !usePools);
+            document.getElementById('poolB-container').classList.toggle('hidden', !usePools);
+            document.getElementById('poolA-title').innerText = usePools ? "Pool A Rankings" : "Overall Rankings";
+
+            // Render Team Chips
+            document.getElementById('teamList').innerHTML = teams.map((t, i) => `
+                <div class="bg-slate-700 px-2 py-1 rounded text-xs flex items-center gap-2">
+                    ${t.name} ${usePools ? `(${t.pool})` : ''}
+                    <button onclick="teams.splice(${i},1); saveAll(); renderAll();" class="text-red-500 font-bold">×</button>
+                </div>
+            `).join('');
+
+            // Update Select Dropdowns
+            const options = `<option value="">Select Team</option>` + teams.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
+            document.getElementById('teamA').innerHTML = options;
+            document.getElementById('teamB').innerHTML = options;
+
+            // Render Match History (G1, G2...)
+            document.getElementById('matchHistory').innerHTML = matches.map((m, i) => `
+                <div class="flex justify-between items-center bg-slate-700 p-2 rounded">
+                    <span><strong>G${i+1}:</strong> ${m.teamA} (${m.scoreA}) vs ${m.teamB} (${m.scoreB})</span>
+                    <button onclick="editMatch(${i})" class="text-blue-400">Edit</button>
+                </div>
+            `).join('');
+
+            // Calculate Rankings
+            const standings = calculateStats();
+            renderTable('leaderboardA', usePools ? standings.filter(t => t.pool === 'A') : standings);
+            if(usePools) renderTable('leaderboardB', standings.filter(t => t.pool === 'B'));
+
+            // Render Eliminations
+            renderBrackets(standings);
+        }
+
+        function calculateStats() {
+            let stats = {};
+            teams.forEach(t => stats[t.name] = { name: t.name, pool: t.pool, wins: 0, losses: 0, pf: 0, pa: 0 });
+            matches.forEach(m => {
+                if(!stats[m.teamA] || !stats[m.teamB]) return;
+                stats[m.teamA].pf += m.scoreA; stats[m.teamA].pa += m.scoreB;
+                stats[m.teamB].pf += m.scoreB; stats[m.teamB].pa += m.scoreA;
+                if (m.scoreA > m.scoreB) { stats[m.teamA].wins++; stats[m.teamB].losses++; }
+                else { stats[m.teamB].wins++; stats[m.teamA].losses++; }
+            });
+            return Object.values(stats).sort((a,b) => (b.wins - a.wins) || ((b.pf/b.pa) - (a.pf/a.pa)));
+        }
+
+        function renderTable(id, data) {
+            document.getElementById(id).innerHTML = data.map((t, i) => `
+                <tr class="border-b border-slate-700">
+                    <td class="py-3 font-bold text-orange-400">#${i+1}</td>
+                    <td>${t.name}</td>
+                    <td>${t.wins}-${t.losses}</td>
+                    <td>${(t.pa === 0 ? 0 : (t.pf / t.pa)).toFixed(3)}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderBrackets(standings) {
+            let html = "";
+            if (settings.usePools) {
+                const poolA = standings.filter(t => t.pool === 'A');
+                const poolB = standings.filter(t => t.pool === 'B');
+                const t1A = poolA[0]?.name || "1st Pool A";
+                const t2A = poolA[1]?.name || "2nd Pool A";
+                const t1B = poolB[0]?.name || "1st Pool B";
+                const t2B = poolB[1]?.name || "2nd Pool B";
+                
+                html = `
+                    <div class="bg-slate-800 p-4 rounded border-l-4 border-blue-500">
+                        <h4 class="text-xs opacity-50">SEMI-FINAL 1 (Crossover)</h4>
+                        <div class="font-bold">${t1A} vs ${t2B}</div>
+                    </div>
+                    <div class="bg-slate-800 p-4 rounded border-l-4 border-blue-500">
+                        <h4 class="text-xs opacity-50">SEMI-FINAL 2 (Crossover)</h4>
+                        <div class="font-bold">${t1B} vs ${t2A}</div>
+                    </div>
+                `;
+            } else {
+                const t1 = standings[0]?.name || "Rank 1";
+                const t2 = standings[1]?.name || "Rank 2";
+                html = `<div class="bg-slate-800 p-4 rounded border-l-4 border-yellow-500">
+                    <h4 class="text-xs opacity-50">CHAMPIONSHIP MATCH</h4>
+                    <div class="font-bold text-xl">${t1} vs ${t2}</div>
+                </div>`;
+            }
+            document.getElementById('semiFinalBracket').innerHTML = html;
+        }
+
+        // Logic for "Record Match" form
         document.getElementById('matchForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            const tA = document.getElementById('teamA').value;
-            const tB = document.getElementById('teamB').value;
-            const sA = parseInt(document.getElementById('scoreA').value);
-            const sB = parseInt(document.getElementById('scoreB').value);
-
-            updateStats(tA, sA, sB);
-            updateStats(tB, sB, sA);
-            renderLeaderboard();
+            const editIndex = parseInt(document.getElementById('editIndex').value);
+            const matchData = {
+                teamA: document.getElementById('teamA').value,
+                teamB: document.getElementById('teamB').value,
+                scoreA: parseInt(document.getElementById('scoreA').value),
+                scoreB: parseInt(document.getElementById('scoreB').value)
+            };
+            if(editIndex > -1) matches[editIndex] = matchData;
+            else matches.push(matchData);
+            saveAll();
             e.target.reset();
+            document.getElementById('editIndex').value = "-1";
+            document.getElementById('submitBtn').innerText = "Record Game";
+            renderAll();
         });
 
-        function updateStats(name, pf, pa) {
-            if (!teams[name]) teams[name] = { name, wins: 0, losses: 0, pf: 0, pa: 0 };
-            teams[name].pf += pf;
-            teams[name].pa += pa;
-            if (pf > pa) teams[name].wins += 1; else teams[name].losses += 1;
+        function editMatch(index) {
+            const m = matches[index];
+            document.getElementById('teamA').value = m.teamA;
+            document.getElementById('teamB').value = m.teamB;
+            document.getElementById('scoreA').value = m.scoreA;
+            document.getElementById('scoreB').value = m.scoreB;
+            document.getElementById('editIndex').value = index;
+            document.getElementById('submitBtn').innerText = "Update G" + (index+1);
+            showSection('admin');
         }
 
-        function renderLeaderboard() {
-            const list = Object.values(teams).sort((a, b) => {
-                const qA = a.pa === 0 ? a.pf : a.pf / a.pa;
-                const qB = b.pa === 0 ? b.pf : b.pf / b.pa;
-                return qB - qA; // Rank by Quotient
-            });
-
-            const body = document.getElementById('leaderboardBody');
-            body.innerHTML = list.map((t, i) => {
-                const quotient = (t.pa === 0 ? t.pf : (t.pf / t.pa)).toFixed(3);
-                return `
-                    <tr class="border-b border-slate-700">
-                        <td class="py-3 font-bold text-orange-400">#${i + 1}</td>
-                        <td>${t.name}</td>
-                        <td>${t.wins}-${t.losses}</td>
-                        <td class="text-green-400 font-mono">${quotient}</td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function shareToFB() {
-            const url = window.location.href;
-            window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
-        }
+        renderAll();
     </script>
 </body>
 </html>
