@@ -3,243 +3,297 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Rebels - Ultimate Tracker</title>
+    <title>The Rebels - Tournament Master</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* BRAND: Black #0a0a0a | Silver #94a3b8 */
+        body { background-color: #0a0a0a; color: #f8fafc; }
+        .silver-text { color: #cbd5e1; }
+        .btn-inactive { background: #171717; color: #94a3b8; border: 1px solid #334155; }
+        .btn-active { background: #cbd5e1; color: #0a0a0a; font-weight: 900; box-shadow: 0 0 15px rgba(203, 213, 225, 0.2); }
+        .score-table td { border-bottom: 1px solid #1e293b; padding: 12px; text-align: center; color: #0a0a0a; }
+        .score-input { width: 50px; height: 35px; background: #e2e8f0; text-align: center; border: 2px solid #94a3b8; border-radius: 6px; font-weight: bold; color: #0a0a0a; }
+        .score-input:focus { border-color: #ffffff; outline: none; background: #fff; transform: scale(1.05); }
+        .rank-card { background: #171717; border-left: 4px solid #94a3b8; }
+        .qualify-row { background: rgba(203, 213, 225, 0.08); }
+    </style>
 </head>
-<body class="bg-slate-900 text-white p-4 pb-20">
+<body class="p-3 pb-24 font-sans">
 
     <header class="text-center mb-6">
-        <h1 class="text-3xl font-bold text-orange-500 italic">THE REBELS</h1>
-        <div class="flex justify-center gap-2 mt-4 text-[10px] font-bold uppercase tracking-widest">
-            <button onclick="showSection('admin')" class="bg-slate-700 px-3 py-2 rounded hover:bg-orange-600 transition">Admin</button>
-            <button onclick="showSection('standings')" class="bg-slate-700 px-3 py-2 rounded hover:bg-orange-600 transition">Standings</button>
-            <button onclick="showSection('eliminations')" class="bg-slate-700 px-3 py-2 rounded hover:bg-orange-600 transition">Eliminations</button>
+        <h1 class="text-3xl font-black italic uppercase tracking-tighter silver-text">THE REBELS</h1>
+        <div class="flex justify-center gap-1 mt-3" id="navBar">
+            <button id="nav-setup" onclick="showSection('setup')" class="btn-active px-4 py-2 rounded text-[10px] uppercase transition-all">1. Setup</button>
+            <button id="nav-pools" onclick="showSection('pools')" class="btn-inactive px-4 py-2 rounded text-[10px] uppercase transition-all">2. Eliminations</button>
+            <button id="nav-playoffs" onclick="showSection('playoffs')" class="btn-inactive px-4 py-2 rounded text-[10px] uppercase transition-all">3. Playoffs</button>
         </div>
     </header>
 
-    <section id="section-admin" class="space-y-6">
-        <div class="bg-slate-800 p-4 rounded-lg shadow-xl border border-slate-700">
-            <h2 class="text-sm font-bold text-slate-400 uppercase mb-3">1. Tournament Settings</h2>
-            <div class="flex items-center gap-3">
-                <input type="checkbox" id="usePools" onchange="togglePools()" class="w-5 h-5 accent-orange-500">
-                <label for="usePools" class="text-sm font-semibold">Enable Pool Play (A/B Groups)</label>
-            </div>
-        </div>
-
-        <div class="bg-slate-800 p-4 rounded-lg shadow-xl border border-slate-700">
-            <h2 class="text-sm font-bold text-slate-400 uppercase mb-3">2. Manage Teams</h2>
+    <section id="section-setup" class="space-y-4">
+        <div class="bg-[#171717] p-5 rounded-xl border border-slate-800 shadow-2xl">
+            <h2 class="text-[10px] font-bold text-slate-500 uppercase mb-4 tracking-widest">Team Registration</h2>
             <div class="flex gap-2 mb-4">
-                <input type="text" id="newTeamName" placeholder="Team Name" class="flex-1 bg-slate-700 p-2 rounded text-sm">
-                <select id="newTeamPool" class="bg-slate-700 p-2 rounded text-sm hidden">
+                <input type="text" id="teamInput" placeholder="Team Name" class="flex-1 bg-[#0a0a0a] border border-slate-700 p-2 rounded text-sm outline-none focus:border-slate-400">
+                <select id="poolSelect" class="bg-[#0a0a0a] p-2 rounded text-xs border border-slate-700">
                     <option value="A">Pool A</option>
                     <option value="B">Pool B</option>
                 </select>
-                <button onclick="addTeam()" class="bg-green-600 px-4 py-2 rounded font-bold">+</button>
+                <button onclick="addTeam()" class="bg-[#cbd5e1] text-[#0a0a0a] px-5 rounded font-bold hover:bg-white transition-all">+</button>
             </div>
-            <div id="teamList" class="flex flex-wrap gap-2"></div>
-        </div>
+            <div id="teamList" class="space-y-1 mb-6"></div>
 
-        <div class="bg-slate-800 p-4 rounded-lg shadow-xl border border-slate-700">
-            <h2 class="text-sm font-bold text-slate-400 uppercase mb-3">3. Record Match (Live Scoring)</h2>
-            <form id="matchForm" class="space-y-3">
-                <input type="hidden" id="editIndex" value="-1">
-                <div class="grid grid-cols-2 gap-2">
-                    <select id="teamA" class="bg-slate-700 p-2 rounded text-sm" required><option value="">Select Team A</option></select>
-                    <select id="teamB" class="bg-slate-700 p-2 rounded text-sm" required><option value="">Select Team B</option></select>
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <input type="number" id="scoreA" placeholder="Score A" class="bg-slate-700 p-2 rounded text-sm" required>
-                    <input type="number" id="scoreB" placeholder="Score B" class="bg-slate-700 p-2 rounded text-sm" required>
-                </div>
-                <button type="submit" id="submitBtn" class="w-full bg-orange-600 font-bold py-2 rounded">Record Game</button>
-            </form>
-        </div>
+            <button onclick="initTournament()" class="w-full bg-[#cbd5e1] text-[#0a0a0a] font-black py-4 rounded text-xs uppercase tracking-widest hover:bg-white shadow-xl transition-all">Generate Schedule</button>
 
-        <div class="bg-slate-800 p-4 rounded-lg shadow-xl border border-slate-700">
-            <h2 class="text-sm font-bold text-slate-400 uppercase mb-3">Match History (G1 - G[X])</h2>
-            <div id="matchHistory" class="space-y-2 text-xs"></div>
+            <div class="mt-8 pt-6 border-t border-slate-800">
+                <h3 class="text-[10px] font-bold text-slate-500 uppercase mb-3 tracking-widest">Documentation & Tools</h3>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="exportCSV()" class="bg-emerald-900/40 text-emerald-400 border border-emerald-800 p-2 rounded text-[10px] font-bold uppercase hover:bg-emerald-800 hover:text-white transition-all">Export to CSV</button>
+                    <button onclick="exportJSON()" class="bg-blue-900/40 text-blue-400 border border-blue-800 p-2 rounded text-[10px] font-bold uppercase hover:bg-blue-800 hover:text-white transition-all">Backup Data</button>
+                </div>
+                <button onclick="resetAll()" class="w-full mt-3 text-[9px] text-red-900 font-bold opacity-40 hover:opacity-100 transition-all uppercase tracking-widest">Factory Reset</button>
+            </div>
         </div>
     </section>
 
-    <section id="section-standings" class="hidden space-y-6">
-        <div id="poolA-container" class="bg-slate-800 p-4 rounded-lg">
-            <h2 id="poolA-title" class="text-lg font-bold text-orange-400 mb-2 underline">Rankings</h2>
-            <table class="w-full text-left text-sm">
-                <thead class="text-slate-500"><tr><th class="py-2">Rank</th><th>Team</th><th>W-L</th><th>Quotient</th></tr></thead>
-                <tbody id="leaderboardA"></tbody>
+    <section id="section-pools" class="hidden space-y-4">
+        <div id="poolToggle" class="flex justify-center gap-2 mb-2">
+            <button onclick="renderPool('A')" id="btnA" class="bg-white text-black px-6 py-2 rounded text-[10px] font-black uppercase">Pool A</button>
+            <button onclick="renderPool('B')" id="btnB" class="bg-slate-700 text-white px-6 py-2 rounded text-[10px] font-black uppercase">Pool B</button>
+        </div>
+        <div class="bg-slate-200 rounded-xl overflow-hidden shadow-2xl">
+            <table class="w-full score-table">
+                <thead class="bg-slate-300 text-[10px] font-black uppercase text-slate-600">
+                    <tr><th>G#</th><th>Matchup</th><th>Scores</th></tr>
+                </thead>
+                <tbody id="poolMatchBody"></tbody>
             </table>
         </div>
-        <div id="poolB-container" class="bg-slate-800 p-4 rounded-lg hidden">
-            <h2 class="text-lg font-bold text-blue-400 mb-2 underline">Pool B Rankings</h2>
-            <table class="w-full text-left text-sm">
-                <thead class="text-slate-500"><tr><th class="py-2">Rank</th><th>Team</th><th>W-L</th><th>Quotient</th></tr></thead>
-                <tbody id="leaderboardB"></tbody>
-            </table>
-        </div>
+        <div id="rankingsDisplay" class="space-y-3"></div>
     </section>
 
-    <section id="section-eliminations" class="hidden space-y-4">
-        <h2 class="text-xl font-bold text-center text-orange-500">Finals Phase</h2>
-        <div id="semiFinalBracket" class="space-y-4">
-            </div>
+    <section id="section-playoffs" class="hidden space-y-4">
+        <div class="flex justify-between items-center px-1">
+            <h2 class="text-xs font-bold silver-text uppercase tracking-widest">Tournament Finals</h2>
+            <button onclick="syncUniversalPlayoffs()" class="bg-white text-black px-4 py-1 rounded text-[10px] font-black uppercase shadow-lg hover:bg-slate-200">Sync Standings</button>
+        </div>
+        <div id="playoffContainer" class="space-y-3"></div>
     </section>
 
     <script>
-        let teams = JSON.parse(localStorage.getItem('rebels_teams')) || [];
-        let matches = JSON.parse(localStorage.getItem('rebels_matches')) || [];
-        let settings = JSON.parse(localStorage.getItem('rebels_settings')) || { usePools: false };
+        let teams = JSON.parse(localStorage.getItem('reb_teams')) || [];
+        let pMatches = JSON.parse(localStorage.getItem('reb_pMatches')) || [];
+        let bracket = JSON.parse(localStorage.getItem('reb_bracket')) || [];
+
+        function save() {
+            localStorage.setItem('reb_teams', JSON.stringify(teams));
+            localStorage.setItem('reb_pMatches', JSON.stringify(pMatches));
+            localStorage.setItem('reb_bracket', JSON.stringify(bracket));
+        }
 
         function showSection(id) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
             document.getElementById(`section-${id}`).classList.remove('hidden');
-            renderAll();
-        }
-
-        function togglePools() {
-            settings.usePools = document.getElementById('usePools').checked;
-            localStorage.setItem('rebels_settings', JSON.stringify(settings));
-            renderAll();
+            document.querySelectorAll('#navBar button').forEach(btn => btn.className = 'btn-inactive px-4 py-2 rounded text-[10px] uppercase transition-all');
+            document.getElementById(`nav-${id}`).className = 'btn-active px-4 py-2 rounded text-[10px] uppercase transition-all';
+            if(id === 'pools') renderPool('A');
+            if(id === 'playoffs') renderBrackets();
         }
 
         function addTeam() {
-            const name = document.getElementById('newTeamName').value;
-            const pool = document.getElementById('newTeamPool').value;
+            const name = document.getElementById('teamInput').value.trim();
+            const pool = document.getElementById('poolSelect').value;
             if(name) {
-                teams.push({ name, pool: settings.usePools ? pool : 'All' });
-                document.getElementById('newTeamName').value = '';
-                saveAll();
-                renderAll();
+                teams.push({ name, pool });
+                document.getElementById('teamInput').value = '';
+                save(); renderTeams();
             }
         }
 
-        function saveAll() {
-            localStorage.setItem('rebels_teams', JSON.stringify(teams));
-            localStorage.setItem('rebels_matches', JSON.stringify(matches));
-        }
-
-        function renderAll() {
-            const usePools = settings.usePools;
-            document.getElementById('usePools').checked = usePools;
-            document.getElementById('newTeamPool').classList.toggle('hidden', !usePools);
-            document.getElementById('poolB-container').classList.toggle('hidden', !usePools);
-            document.getElementById('poolA-title').innerText = usePools ? "Pool A Rankings" : "Overall Rankings";
-
-            // Render Team Chips
+        function renderTeams() {
             document.getElementById('teamList').innerHTML = teams.map((t, i) => `
-                <div class="bg-slate-700 px-2 py-1 rounded text-xs flex items-center gap-2">
-                    ${t.name} ${usePools ? `(${t.pool})` : ''}
-                    <button onclick="teams.splice(${i},1); saveAll(); renderAll();" class="text-red-500 font-bold">×</button>
-                </div>
-            `).join('');
-
-            // Update Select Dropdowns
-            const options = `<option value="">Select Team</option>` + teams.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
-            document.getElementById('teamA').innerHTML = options;
-            document.getElementById('teamB').innerHTML = options;
-
-            // Render Match History (G1, G2...)
-            document.getElementById('matchHistory').innerHTML = matches.map((m, i) => `
-                <div class="flex justify-between items-center bg-slate-700 p-2 rounded">
-                    <span><strong>G${i+1}:</strong> ${m.teamA} (${m.scoreA}) vs ${m.teamB} (${m.scoreB})</span>
-                    <button onclick="editMatch(${i})" class="text-blue-400">Edit</button>
-                </div>
-            `).join('');
-
-            // Calculate Rankings
-            const standings = calculateStats();
-            renderTable('leaderboardA', usePools ? standings.filter(t => t.pool === 'A') : standings);
-            if(usePools) renderTable('leaderboardB', standings.filter(t => t.pool === 'B'));
-
-            // Render Eliminations
-            renderBrackets(standings);
+                <div class="bg-[#0a0a0a] p-2 border border-slate-800 rounded flex justify-between items-center text-[10px]">
+                    <span><strong class="silver-text">T${i+1}:</strong> ${t.name} (Pool ${t.pool})</span>
+                    <button onclick="teams.splice(${i},1); save(); renderTeams();" class="text-red-900 font-bold px-2">×</button>
+                </div>`).join('');
         }
 
-        function calculateStats() {
-            let stats = {};
-            teams.forEach(t => stats[t.name] = { name: t.name, pool: t.pool, wins: 0, losses: 0, pf: 0, pa: 0 });
-            matches.forEach(m => {
-                if(!stats[m.teamA] || !stats[m.teamB]) return;
-                stats[m.teamA].pf += m.scoreA; stats[m.teamA].pa += m.scoreB;
-                stats[m.teamB].pf += m.scoreB; stats[m.teamB].pa += m.scoreA;
-                if (m.scoreA > m.scoreB) { stats[m.teamA].wins++; stats[m.teamB].losses++; }
-                else { stats[m.teamB].wins++; stats[m.teamA].losses++; }
+        function initTournament() {
+            if(teams.length < 2) return alert('Add at least 2 teams first!');
+            pMatches = [];
+            let gCount = 1;
+            // 4-team rotation: 1v2,3v4 → 1v3,2v4 → 2v3,1v4 (no team plays back-to-back)
+            const rot4 = [[0,1,2,3],[0,2,1,3],[1,2,0,3]];
+            ['A', 'B'].forEach(p => {
+                const pt = teams.filter(t => t.pool === p);
+                if(pt.length < 2) return;
+                if(pt.length === 4) {
+                    rot4.forEach(([a,b,c,d]) => {
+                        pMatches.push({ gid: gCount++, pool: p, t1: pt[a], t2: pt[b], s1: '', s2: '' });
+                        pMatches.push({ gid: gCount++, pool: p, t1: pt[c], t2: pt[d], s1: '', s2: '' });
+                    });
+                } else {
+                    for(let i = 0; i < pt.length; i++)
+                        for(let j = i + 1; j < pt.length; j++)
+                            pMatches.push({ gid: gCount++, pool: p, t1: pt[i], t2: pt[j], s1: '', s2: '' });
+                }
             });
-            return Object.values(stats).sort((a,b) => (b.wins - a.wins) || ((b.pf/b.pa) - (a.pf/a.pa)));
+            save(); showSection('pools');
         }
 
-        function renderTable(id, data) {
-            document.getElementById(id).innerHTML = data.map((t, i) => `
-                <tr class="border-b border-slate-700">
-                    <td class="py-3 font-bold text-orange-400">#${i+1}</td>
-                    <td>${t.name}</td>
-                    <td>${t.wins}-${t.losses}</td>
-                    <td>${(t.pa === 0 ? 0 : (t.pf / t.pa)).toFixed(3)}</td>
-                </tr>
-            `).join('');
+        function renderPool(p) {
+            const hasB = teams.some(t => t.pool === 'B');
+            document.getElementById('poolToggle').classList.toggle('hidden', !hasB);
+            document.getElementById('btnA').className = p === 'A' ? 'bg-white text-black px-6 py-2 rounded text-[10px] font-black uppercase' : 'bg-slate-700 text-white px-6 py-2 rounded text-[10px] font-black uppercase';
+            document.getElementById('btnB').className = p === 'B' ? 'bg-white text-black px-6 py-2 rounded text-[10px] font-black uppercase' : 'bg-slate-700 text-white px-6 py-2 rounded text-[10px] font-black uppercase';
+            const m = pMatches.filter(x => x.pool === p);
+            document.getElementById('poolMatchBody').innerHTML = m.map(x => {
+                const idx = pMatches.findIndex(orig => orig === x);
+                return `<tr>
+                    <td class="text-slate-500 font-bold">G${x.gid}</td>
+                    <td class="font-bold text-[10px]">${x.t1.name}<br>vs<br>${x.t2.name}</td>
+                    <td>
+                        <input type="number" value="${x.s1}" onchange="updatePScore(${idx},'s1',this.value)" class="score-input">
+                        <input type="number" value="${x.s2}" onchange="updatePScore(${idx},'s2',this.value)" class="score-input">
+                    </td>
+                </tr>`;
+            }).join('');
+            renderLeaderboard();
         }
 
-        function renderBrackets(standings) {
-            let html = "";
-            if (settings.usePools) {
-                const poolA = standings.filter(t => t.pool === 'A');
-                const poolB = standings.filter(t => t.pool === 'B');
-                const t1A = poolA[0]?.name || "1st Pool A";
-                const t2A = poolA[1]?.name || "2nd Pool A";
-                const t1B = poolB[0]?.name || "1st Pool B";
-                const t2B = poolB[1]?.name || "2nd Pool B";
-                
-                html = `
-                    <div class="bg-slate-800 p-4 rounded border-l-4 border-blue-500">
-                        <h4 class="text-xs opacity-50">SEMI-FINAL 1 (Crossover)</h4>
-                        <div class="font-bold">${t1A} vs ${t2B}</div>
-                    </div>
-                    <div class="bg-slate-800 p-4 rounded border-l-4 border-blue-500">
-                        <h4 class="text-xs opacity-50">SEMI-FINAL 2 (Crossover)</h4>
-                        <div class="font-bold">${t1B} vs ${t2A}</div>
-                    </div>
-                `;
-            } else {
-                const t1 = standings[0]?.name || "Rank 1";
-                const t2 = standings[1]?.name || "Rank 2";
-                html = `<div class="bg-slate-800 p-4 rounded border-l-4 border-yellow-500">
-                    <h4 class="text-xs opacity-50">CHAMPIONSHIP MATCH</h4>
-                    <div class="font-bold text-xl">${t1} vs ${t2}</div>
+        function updatePScore(i, k, v) { pMatches[i][k] = v === '' ? '' : parseInt(v); save(); renderLeaderboard(); }
+
+        function getStats(p) {
+            let s = {};
+            teams.filter(t => t.pool === p).forEach(t => s[t.name] = { name: t.name, w: 0, pf: 0, pa: 0, gp: 0 });
+            pMatches.filter(m => m.pool === p && m.s1 !== '' && m.s2 !== '').forEach(m => {
+                const k1 = m.t1.name; const k2 = m.t2.name;
+                if(s[k1] && s[k2]) {
+                    s[k1].gp++; s[k2].gp++;
+                    s[k1].pf += m.s1; s[k1].pa += m.s2;
+                    s[k2].pf += m.s2; s[k2].pa += m.s1;
+                    if(m.s1 > m.s2) s[k1].w++; else if(m.s2 > m.s1) s[k2].w++;
+                }
+            });
+            return Object.values(s).sort((a,b) => b.w - a.w || (b.pf/(b.pa||1)) - (a.pf/(a.pa||1)));
+        }
+
+        function renderLeaderboard() {
+            const ps = teams.some(t => t.pool === 'B') ? ['A', 'B'] : ['A'];
+            document.getElementById('rankingsDisplay').innerHTML = ps.map(p => {
+                const r = getStats(p);
+                return `
+                <div class="bg-[#171717] rounded-xl overflow-hidden border border-slate-800 shadow-lg">
+                    <div class="bg-[#1e293b] p-2 text-[10px] font-black uppercase silver-text tracking-widest">Pool ${p} Standings</div>
+                    <table class="w-full text-left text-[11px]">
+                        <thead><tr class="text-slate-500 border-b border-slate-800"><th class="p-2">#</th><th>Team</th><th>W-L</th><th>GP</th><th>Quotient</th></tr></thead>
+                        <tbody>${r.map((t, i) => `
+                            <tr class="${i < 4 ? 'qualify-row' : ''} border-b border-slate-800/50">
+                                <td class="p-2 font-bold silver-text">${i+1}</td>
+                                <td>${t.name}</td>
+                                <td>${t.w}-${t.gp - t.w}</td>
+                                <td class="text-slate-500">${t.gp}</td>
+                                <td class="font-mono text-emerald-500">${(t.pa===0?0:t.pf/t.pa).toFixed(3)}</td>
+                            </tr>`).join('')}
+                        </tbody>
+                    </table>
                 </div>`;
+            }).join('');
+        }
+
+        function syncUniversalPlayoffs() {
+            const rA = getStats('A'); const rB = getStats('B');
+            const isSingle = rB.length === 0;
+            bracket = [];
+
+            if(isSingle) {
+                if(rA.length === 5) {
+                    bracket = [
+                        { gid: 21, ph: 'WILDCARD',   t1: rA[3].name, t2: rA[4].name,   s1:'', s2:'', next: 27, slot: 't2' },
+                        { gid: 27, ph: 'SEMI-FINAL', t1: rA[0].name, t2: 'WG21',        s1:'', s2:'', next: 30, slot: 't1', lNext: 29, lSlot: 't1' },
+                        { gid: 28, ph: 'SEMI-FINAL', t1: rA[1].name, t2: rA[2].name,   s1:'', s2:'', next: 30, slot: 't2', lNext: 29, lSlot: 't2' },
+                    ];
+                } else {
+                    bracket = [
+                        { gid: 27, ph: 'SEMI-FINAL', t1: rA[0].name, t2: rA[3]?.name || 'TBD', s1:'', s2:'', next: 30, slot: 't1', lNext: 29, lSlot: 't1' },
+                        { gid: 28, ph: 'SEMI-FINAL', t1: rA[1].name, t2: rA[2]?.name || 'TBD', s1:'', s2:'', next: 30, slot: 't2', lNext: 29, lSlot: 't2' },
+                    ];
+                }
+            } else {
+                bracket = [
+                    { gid: 21, ph: 'ELIM-A',     t1: rA[3]?.name, t2: rA[4]?.name, s1:'', s2:'', next: 24, slot: 't2' },
+                    { gid: 22, ph: 'ELIM-B',     t1: rB[3]?.name, t2: rB[4]?.name, s1:'', s2:'', next: 23, slot: 't2' },
+                    { gid: 23, ph: 'CROSS',      t1: rA[0]?.name, t2: 'WG22',      s1:'', s2:'', next: 27, slot: 't1' },
+                    { gid: 24, ph: 'CROSS',      t1: rB[0]?.name, t2: 'WG21',      s1:'', s2:'', next: 28, slot: 't2' },
+                    { gid: 25, ph: 'CROSS',      t1: rA[1]?.name, t2: rB[2]?.name, s1:'', s2:'', next: 28, slot: 't1' },
+                    { gid: 26, ph: 'CROSS',      t1: rA[2]?.name, t2: rB[1]?.name, s1:'', s2:'', next: 27, slot: 't2' },
+                    { gid: 27, ph: 'SEMI',       t1: 'WG23',      t2: 'WG26',      s1:'', s2:'', next: 30, slot: 't1', lNext: 29, lSlot: 't1' },
+                    { gid: 28, ph: 'SEMI',       t1: 'WG25',      t2: 'WG24',      s1:'', s2:'', next: 30, slot: 't2', lNext: 29, lSlot: 't2' },
+                ];
+                if(rA.length < 5) { bracket = bracket.filter(g => g.gid !== 21); const b24 = bracket.find(g => g.gid === 24); if(b24) b24.t2 = rA[3]?.name; }
+                if(rB.length < 5) { bracket = bracket.filter(g => g.gid !== 22); const b23 = bracket.find(g => g.gid === 23); if(b23) b23.t2 = rB[3]?.name; }
             }
-            document.getElementById('semiFinalBracket').innerHTML = html;
+            bracket.push({ gid: 29, ph: '3RD PLACE', t1: 'LG27', t2: 'LG28', s1:'', s2:'' });
+            bracket.push({ gid: 30, ph: 'CHAMPION',  t1: 'WG27', t2: 'WG28', s1:'', s2:'' });
+            save(); renderBrackets();
         }
 
-        // Logic for "Record Match" form
-        document.getElementById('matchForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const editIndex = parseInt(document.getElementById('editIndex').value);
-            const matchData = {
-                teamA: document.getElementById('teamA').value,
-                teamB: document.getElementById('teamB').value,
-                scoreA: parseInt(document.getElementById('scoreA').value),
-                scoreB: parseInt(document.getElementById('scoreB').value)
-            };
-            if(editIndex > -1) matches[editIndex] = matchData;
-            else matches.push(matchData);
-            saveAll();
-            e.target.reset();
-            document.getElementById('editIndex').value = "-1";
-            document.getElementById('submitBtn').innerText = "Record Game";
-            renderAll();
-        });
-
-        function editMatch(index) {
-            const m = matches[index];
-            document.getElementById('teamA').value = m.teamA;
-            document.getElementById('teamB').value = m.teamB;
-            document.getElementById('scoreA').value = m.scoreA;
-            document.getElementById('scoreB').value = m.scoreB;
-            document.getElementById('editIndex').value = index;
-            document.getElementById('submitBtn').innerText = "Update G" + (index+1);
-            showSection('admin');
+        function updateBScore(gid, key, val) {
+            const idx = bracket.findIndex(g => g.gid === gid);
+            if(idx === -1) return;
+            bracket[idx][key] = val === '' ? '' : parseInt(val);
+            const m = bracket[idx];
+            if(m.s1 !== '' && m.s2 !== '' && m.next) {
+                const winner = m.s1 > m.s2 ? m.t1 : m.t2;
+                const loser  = m.s1 > m.s2 ? m.t2 : m.t1;
+                const nMatch = bracket.find(x => x.gid === m.next);
+                if(nMatch) nMatch[m.slot] = winner;
+                if(m.lNext) {
+                    const lMatch = bracket.find(x => x.gid === m.lNext);
+                    if(lMatch) lMatch[m.lSlot] = loser;
+                }
+            }
+            save(); renderBrackets();
         }
 
-        renderAll();
+        function renderBrackets() {
+            document.getElementById('playoffContainer').innerHTML = bracket.length === 0
+                ? `<div class="text-center text-slate-600 text-sm py-12">Complete eliminations then tap <strong class="silver-text">Sync Standings</strong>.</div>`
+                : bracket.map(m => `
+                <div class="rank-card p-3 rounded-xl shadow-lg">
+                    <div class="text-[9px] font-black text-slate-500 mb-2 uppercase tracking-widest">G${m.gid} • ${m.ph}</div>
+                    <div class="flex items-center gap-2">
+                        <div class="text-[10px] font-bold truncate flex-1 silver-text">${m.t1 || 'TBD'}</div>
+                        <input type="number" value="${m.s1}" onchange="updateBScore(${m.gid},'s1',this.value)" class="score-input">
+                        <div class="text-slate-600 text-[10px] font-bold">vs</div>
+                        <input type="number" value="${m.s2}" onchange="updateBScore(${m.gid},'s2',this.value)" class="score-input">
+                        <div class="text-[10px] font-bold truncate flex-1 text-right silver-text">${m.t2 || 'TBD'}</div>
+                    </div>
+                </div>`).join('');
+        }
+
+        function exportCSV() {
+            const rows = [['Game', 'Pool', 'Team 1', 'Score 1', 'Team 2', 'Score 2']];
+            pMatches.forEach(m => rows.push([`G${m.gid}`, m.pool, m.t1.name, m.s1, m.t2.name, m.s2]));
+            bracket.forEach(m => rows.push([`G${m.gid}`, 'PLAYOFF', m.t1||'', m.s1, m.t2||'', m.s2]));
+            const csv = rows.map(r => r.join(',')).join('\n');
+            const a = document.createElement('a');
+            a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+            a.download = 'rebels_tournament.csv';
+            a.click();
+        }
+
+        function exportJSON() {
+            const data = { teams, pMatches, bracket, exportedAt: new Date().toISOString() };
+            const a = document.createElement('a');
+            a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data, null, 2));
+            a.download = 'rebels_backup.json';
+            a.click();
+        }
+
+        function resetAll() { if(confirm('DANGER: Wipe ALL data?')) { localStorage.clear(); location.reload(); } }
+
+        renderTeams();
+        if(bracket.length > 0) renderBrackets();
     </script>
 </body>
 </html>
